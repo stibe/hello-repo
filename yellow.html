@@ -1,0 +1,646 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Yellow Wall Ideas</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #1a1408;
+      --surface: #221c0a;
+      --border: #3a3010;
+      --accent: #f5c518;
+      --accent-dark: #c9a010;
+      --text: #f0e8d0;
+      --muted: #7a6a40;
+    }
+
+    body {
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+    }
+
+    /* ── Header ── */
+    header {
+      text-align: center;
+      padding: 3rem 1rem 1.5rem;
+      border-bottom: 1px solid var(--border);
+      position: relative;
+    }
+
+    header h1 {
+      font-size: 2.2rem;
+      font-weight: 800;
+      color: var(--accent);
+      letter-spacing: 0.03em;
+    }
+
+    header p {
+      color: var(--muted);
+      margin-top: 0.4rem;
+      font-size: 0.9rem;
+    }
+
+    .home-link {
+      position: absolute;
+      left: 1.5rem;
+      top: 1.5rem;
+      color: var(--muted);
+      font-size: 0.85rem;
+      text-decoration: none;
+    }
+    .home-link:hover { color: var(--accent); }
+
+    .btn {
+      background: var(--accent);
+      color: #1a1408;
+      border: none;
+      border-radius: 8px;
+      padding: 0.65rem 1.2rem;
+      font-weight: 700;
+      font-size: 0.9rem;
+      cursor: pointer;
+      transition: background 0.15s;
+      white-space: nowrap;
+    }
+
+    .btn:hover { background: var(--accent-dark); }
+    .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    #keyError {
+      color: #e57373;
+      font-size: 0.8rem;
+      margin-top: 0.6rem;
+      display: none;
+    }
+
+    /* ── Key setup ── */
+    #setup {
+      max-width: 480px;
+      margin: 3rem auto;
+      padding: 2rem;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      text-align: center;
+    }
+
+    #setup h2 {
+      font-size: 1.1rem;
+      color: var(--accent);
+      margin-bottom: 0.5rem;
+    }
+
+    #setup p {
+      color: var(--muted);
+      font-size: 0.85rem;
+      margin-bottom: 1.2rem;
+      line-height: 1.5;
+    }
+
+    #setup a { color: var(--accent); }
+
+    .key-row {
+      display: flex;
+      gap: 0.5rem;
+    }
+
+    #keyInput {
+      flex: 1;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 0.65rem 0.9rem;
+      color: var(--text);
+      font-size: 0.9rem;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    #keyInput:focus { border-color: var(--accent); }
+
+    /* ── Controls ── */
+    #controls {
+      display: none;
+      max-width: 900px;
+      margin: 2rem auto 1.5rem;
+      padding: 0 1rem;
+      gap: 0.8rem;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    #searchInput {
+      flex: 1;
+      min-width: 200px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 0.65rem 1rem;
+      color: var(--text);
+      font-size: 0.9rem;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    #searchInput:focus { border-color: var(--accent); }
+
+    #resetKeyBtn {
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--muted);
+      border-radius: 8px;
+      padding: 0.65rem 0.9rem;
+      font-size: 0.8rem;
+      cursor: pointer;
+    }
+
+    #resetKeyBtn:hover { border-color: var(--muted); color: var(--text); }
+
+    /* ── Status / error ── */
+    #status {
+      text-align: center;
+      padding: 3rem 1rem;
+      color: var(--muted);
+      font-size: 0.9rem;
+      display: none;
+    }
+
+    #status.error { color: #e57373; }
+
+    /* ── Masonry grid ── */
+    #gallery {
+      display: none;
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 1.5rem 1rem 4rem;
+      columns: 4 280px;
+      column-gap: 12px;
+    }
+
+    .thumb {
+      break-inside: avoid;
+      margin-bottom: 12px;
+      border-radius: 10px;
+      overflow: hidden;
+      cursor: zoom-in;
+      position: relative;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+
+    .thumb:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 8px 32px rgba(0,0,0,0.6);
+      border-color: var(--accent);
+    }
+
+    .thumb img {
+      display: block;
+      width: 100%;
+      height: auto;
+      transition: opacity 0.3s;
+      opacity: 0;
+    }
+
+    .thumb img.loaded { opacity: 1; }
+
+    .thumb-overlay {
+      position: absolute;
+      bottom: 0; left: 0; right: 0;
+      background: linear-gradient(transparent, rgba(0,0,0,0.75));
+      padding: 1.5rem 0.8rem 0.6rem;
+      opacity: 0;
+      transition: opacity 0.2s;
+    }
+
+    .thumb:hover .thumb-overlay { opacity: 1; }
+
+    .thumb-credit {
+      font-size: 0.7rem;
+      color: rgba(255,255,255,0.8);
+    }
+
+    /* ── Load more ── */
+    #loadMore {
+      display: none;
+      margin: 0 auto 4rem;
+      padding: 0.75rem 2.5rem;
+    }
+
+    /* ── Lightbox ── */
+    #lightbox {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.92);
+      z-index: 1000;
+      align-items: center;
+      justify-content: center;
+      padding: 1rem;
+    }
+
+    #lightbox.open { display: flex; }
+
+    #lb-inner {
+      position: relative;
+      max-width: min(92vw, 1920px);
+      max-height: 92vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    #lb-img {
+      max-width: 100%;
+      max-height: 85vh;
+      border-radius: 8px;
+      object-fit: contain;
+      box-shadow: 0 24px 80px rgba(0,0,0,0.8);
+    }
+
+    #lb-caption {
+      margin-top: 0.8rem;
+      font-size: 0.8rem;
+      color: rgba(255,255,255,0.5);
+      text-align: center;
+    }
+
+    #lb-caption a { color: var(--accent); }
+
+    #lb-close {
+      position: fixed;
+      top: 1.2rem;
+      right: 1.5rem;
+      background: rgba(255,255,255,0.1);
+      border: none;
+      color: #fff;
+      font-size: 1.8rem;
+      line-height: 1;
+      width: 2.4rem;
+      height: 2.4rem;
+      border-radius: 50%;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.15s;
+    }
+
+    #lb-close:hover { background: rgba(255,255,255,0.2); }
+
+    #lb-prev, #lb-next {
+      position: fixed;
+      top: 50%;
+      transform: translateY(-50%);
+      background: rgba(255,255,255,0.1);
+      border: none;
+      color: #fff;
+      font-size: 2rem;
+      width: 3rem;
+      height: 3rem;
+      border-radius: 50%;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.15s;
+    }
+
+    #lb-prev { left: 1rem; }
+    #lb-next { right: 1rem; }
+    #lb-prev:hover, #lb-next:hover { background: rgba(255,255,255,0.2); }
+
+    #lb-spinner {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .spinner {
+      width: 36px; height: 36px;
+      border: 3px solid rgba(255,255,255,0.1);
+      border-top-color: var(--accent);
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    #lb-counter {
+      position: fixed;
+      top: 1.4rem;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 0.8rem;
+      color: rgba(255,255,255,0.4);
+    }
+
+    @media (max-width: 600px) {
+      #lb-prev { left: 0.3rem; }
+      #lb-next { right: 0.3rem; }
+      header h1 { font-size: 1.5rem; }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <a class="home-link" href="index.html">← home</a>
+  <h1>🟡 Yellow Wall Ideas</h1>
+  <p>High-res decorative wall inspiration · powered by Unsplash</p>
+</header>
+
+<!-- API key setup -->
+<div id="setup">
+  <h2>Enter your Unsplash Access Key</h2>
+  <p>
+    Get a free key at
+    <a href="https://unsplash.com/developers" target="_blank">unsplash.com/developers</a>
+    (takes ~2 min). Your key is stored only in this browser tab.
+  </p>
+  <div class="key-row">
+    <input id="keyInput" type="password" placeholder="Paste your Access Key…" autocomplete="off">
+    <button class="btn" id="keyBtn" onclick="submitKey()">Load</button>
+  </div>
+  <div id="keyError">Invalid key or API error — please check and try again.</div>
+</div>
+
+<!-- Search controls -->
+<div id="controls" style="display:none;flex-direction:row;">
+  <input id="searchInput" type="search" value="yellow decorative wall ideas" placeholder="Search…">
+  <button class="btn" onclick="search()">Search</button>
+  <button id="resetKeyBtn" onclick="resetKey()" title="Change API key">🔑 Key</button>
+</div>
+
+<!-- Status / errors -->
+<div id="status"></div>
+
+<!-- Image grid -->
+<div id="gallery"></div>
+
+<!-- Load more -->
+<div style="text-align:center">
+  <button id="loadMore" class="btn" onclick="loadMore()">Load more</button>
+</div>
+
+<!-- Lightbox -->
+<div id="lightbox" role="dialog" aria-modal="true">
+  <div id="lb-inner">
+    <div id="lb-spinner"><div class="spinner"></div></div>
+    <img id="lb-img" src="" alt="" style="display:none">
+    <div id="lb-caption"></div>
+  </div>
+  <div id="lb-counter"></div>
+  <button id="lb-close" onclick="closeLightbox()" aria-label="Close">×</button>
+  <button id="lb-prev" onclick="lbStep(-1)" aria-label="Previous">‹</button>
+  <button id="lb-next" onclick="lbStep(1)"  aria-label="Next">›</button>
+</div>
+
+<script>
+  const KEY_STORE = 'unsplash_key_yellow';
+  const MIN_EDGE  = 1920;
+
+  let apiKey  = '';
+  let photos  = [];
+  let page    = 1;
+  let query   = 'yellow decorative wall ideas';
+  let lbIndex = 0;
+
+  // ── Boot ──────────────────────────────────────────────
+  (function init() {
+    const saved = sessionStorage.getItem(KEY_STORE);
+    if (saved) { apiKey = saved; showApp(); search(); }
+  })();
+
+  // ── Key handling ──────────────────────────────────────
+  function submitKey() {
+    const val = document.getElementById('keyInput').value.trim();
+    if (!val) return;
+    apiKey = val;
+    document.getElementById('keyBtn').disabled = true;
+    testKey();
+  }
+
+  async function testKey() {
+    try {
+      const r = await fetch(
+        `https://api.unsplash.com/search/photos?query=test&per_page=1`,
+        { headers: { Authorization: `Client-ID ${apiKey}` } }
+      );
+      if (!r.ok) throw new Error();
+      sessionStorage.setItem(KEY_STORE, apiKey);
+      showApp();
+      search();
+    } catch {
+      document.getElementById('keyError').style.display = 'block';
+      document.getElementById('keyBtn').disabled = false;
+    }
+  }
+
+  function showApp() {
+    document.getElementById('setup').style.display    = 'none';
+    document.getElementById('controls').style.display = 'flex';
+  }
+
+  function resetKey() {
+    sessionStorage.removeItem(KEY_STORE);
+    apiKey = '';
+    photos = [];
+    page   = 1;
+    document.getElementById('gallery').innerHTML = '';
+    document.getElementById('gallery').style.display = 'none';
+    document.getElementById('loadMore').style.display = 'none';
+    document.getElementById('controls').style.display = 'none';
+    document.getElementById('keyInput').value = '';
+    document.getElementById('keyError').style.display = 'none';
+    document.getElementById('keyBtn').disabled = false;
+    document.getElementById('setup').style.display = 'block';
+  }
+
+  // ── Search ────────────────────────────────────────────
+  function search() {
+    query  = document.getElementById('searchInput').value.trim()
+              || 'yellow decorative wall ideas';
+    photos = [];
+    page   = 1;
+    document.getElementById('gallery').innerHTML = '';
+    fetchPage();
+  }
+
+  async function loadMore() {
+    page++;
+    fetchPage();
+  }
+
+  async function fetchPage() {
+    setStatus('Loading…');
+    document.getElementById('loadMore').style.display = 'none';
+
+    try {
+      const r = await fetch(
+        `https://api.unsplash.com/search/photos` +
+        `?query=${encodeURIComponent(query)}` +
+        `&per_page=30&page=${page}&orientation=landscape`,
+        { headers: { Authorization: `Client-ID ${apiKey}` } }
+      );
+      if (!r.ok) throw new Error(`API error ${r.status}`);
+      const data = await r.json();
+
+      // Filter: both edges ≥ 1920
+      const filtered = (data.results || []).filter(
+        p => p.width >= MIN_EDGE && p.height >= MIN_EDGE
+      );
+
+      if (filtered.length === 0 && page === 1) {
+        setStatus('No high-res results found. Try a different search.', true);
+        return;
+      }
+
+      clearStatus();
+      renderPhotos(filtered, data.results || []);
+
+      const totalPages = data.total_pages || 1;
+      document.getElementById('loadMore').style.display =
+        page < totalPages ? 'inline-block' : 'none';
+
+    } catch (e) {
+      setStatus(e.message || 'Failed to load images.', true);
+    }
+  }
+
+  function renderPhotos(list, allResults) {
+    const gallery = document.getElementById('gallery');
+    gallery.style.display = 'block';
+
+    list.forEach(photo => {
+      const startIndex = photos.length;
+      photos.push(photo);
+      const idx = startIndex;
+
+      // Use full-size URL (Unsplash raw with w=1920 minimum)
+      const thumbUrl = photo.urls.regular;      // ~1080px — fast thumb
+      const fullUrl  = photo.urls.full;          // original full res ≥ 1920
+
+      const div = document.createElement('div');
+      div.className = 'thumb';
+      div.setAttribute('data-index', idx);
+
+      div.innerHTML = `
+        <img src="${thumbUrl}" alt="${esc(photo.alt_description || 'wall idea')}"
+             loading="lazy" decoding="async">
+        <div class="thumb-overlay">
+          <span class="thumb-credit">
+            📷 ${esc(photo.user.name)}
+            · ${photo.width}×${photo.height}
+          </span>
+        </div>
+      `;
+
+      const img = div.querySelector('img');
+      img.onload = () => img.classList.add('loaded');
+
+      div.addEventListener('click', () => openLightbox(idx));
+      gallery.appendChild(div);
+    });
+  }
+
+  // ── Lightbox ──────────────────────────────────────────
+  function openLightbox(idx) {
+    lbIndex = idx;
+    showLbPhoto();
+    document.getElementById('lightbox').classList.add('open');
+    document.body.style.overflow = 'hidden';
+  }
+
+  function closeLightbox() {
+    document.getElementById('lightbox').classList.remove('open');
+    document.body.style.overflow = '';
+    document.getElementById('lb-img').style.display = 'none';
+    document.getElementById('lb-spinner').style.display = 'flex';
+  }
+
+  function lbStep(dir) {
+    lbIndex = (lbIndex + dir + photos.length) % photos.length;
+    showLbPhoto();
+  }
+
+  function showLbPhoto() {
+    const photo = photos[lbIndex];
+    const lbImg = document.getElementById('lb-img');
+
+    lbImg.style.display  = 'none';
+    document.getElementById('lb-spinner').style.display = 'flex';
+    document.getElementById('lb-counter').textContent =
+      `${lbIndex + 1} / ${photos.length}`;
+
+    // Construct a 1920px wide URL from raw
+    const hiResUrl = photo.urls.raw + '&w=1920&q=85&fm=jpg&fit=crop';
+
+    lbImg.src = hiResUrl;
+    lbImg.alt = photo.alt_description || 'wall idea';
+
+    lbImg.onload = () => {
+      document.getElementById('lb-spinner').style.display = 'none';
+      lbImg.style.display = 'block';
+    };
+
+    document.getElementById('lb-caption').innerHTML =
+      `${esc(photo.alt_description || '')}` +
+      ` · Photo by <a href="${photo.user.links.html}?utm_source=yellow_wall_page&utm_medium=referral" target="_blank">${esc(photo.user.name)}</a>` +
+      ` on <a href="https://unsplash.com/?utm_source=yellow_wall_page&utm_medium=referral" target="_blank">Unsplash</a>` +
+      ` · ${photo.width}×${photo.height}`;
+  }
+
+  // ── Keyboard nav ─────────────────────────────────────
+  document.addEventListener('keydown', e => {
+    if (!document.getElementById('lightbox').classList.contains('open')) return;
+    if (e.key === 'Escape')     closeLightbox();
+    if (e.key === 'ArrowRight') lbStep(1);
+    if (e.key === 'ArrowLeft')  lbStep(-1);
+  });
+
+  // Close lightbox on backdrop click
+  document.getElementById('lightbox').addEventListener('click', e => {
+    if (e.target === document.getElementById('lightbox')) closeLightbox();
+  });
+
+  // Enter key on search / key input fields
+  document.getElementById('searchInput').addEventListener('keydown', e => {
+    if (e.key === 'Enter') search();
+  });
+  document.getElementById('keyInput').addEventListener('keydown', e => {
+    if (e.key === 'Enter') submitKey();
+  });
+
+  // ── Helpers ───────────────────────────────────────────
+  function setStatus(msg, isError = false) {
+    const el = document.getElementById('status');
+    el.textContent = msg;
+    el.className   = isError ? 'error' : '';
+    el.style.display = 'block';
+  }
+
+  function clearStatus() {
+    const el = document.getElementById('status');
+    el.style.display = 'none';
+  }
+
+  function esc(str) {
+    return String(str)
+      .replace(/&/g,'&amp;')
+      .replace(/</g,'&lt;')
+      .replace(/>/g,'&gt;')
+      .replace(/"/g,'&quot;');
+  }
+</script>
+
+</body>
+</html>
