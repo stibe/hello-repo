@@ -1,0 +1,502 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>kuusnepa — Chess Stats</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      background: #0f0f1a;
+      color: #e0e0e0;
+      min-height: 100vh;
+      padding: 2rem 1rem 4rem;
+    }
+
+    a { color: #81c784; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+
+    /* ── Header ── */
+    header {
+      text-align: center;
+      margin-bottom: 2.5rem;
+    }
+
+    .chess-icon {
+      font-size: 3.5rem;
+      line-height: 1;
+      margin-bottom: 0.5rem;
+    }
+
+    header h1 {
+      font-size: 2.2rem;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      color: #fff;
+    }
+
+    header h1 span {
+      color: #81c784;
+    }
+
+    header p {
+      color: #888;
+      margin-top: 0.3rem;
+      font-size: 0.9rem;
+    }
+
+    header p a {
+      color: #888;
+    }
+
+    /* ── Container ── */
+    .container {
+      max-width: 860px;
+      margin: 0 auto;
+    }
+
+    /* ── Section labels ── */
+    .section-label {
+      font-size: 0.7rem;
+      font-weight: 700;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: #555;
+      margin-bottom: 1rem;
+      padding-left: 2px;
+    }
+
+    /* ── Highlight strip ── */
+    .highlights {
+      display: flex;
+      gap: 1rem;
+      margin-bottom: 2.5rem;
+      flex-wrap: wrap;
+    }
+
+    .highlight-card {
+      flex: 1;
+      min-width: 150px;
+      background: linear-gradient(135deg, #1e1e32, #252540);
+      border: 1px solid #2a2a45;
+      border-radius: 12px;
+      padding: 1.2rem 1.4rem;
+      text-align: center;
+    }
+
+    .highlight-card .label {
+      font-size: 0.72rem;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: #888;
+      margin-bottom: 0.4rem;
+    }
+
+    .highlight-card .value {
+      font-size: 2.4rem;
+      font-weight: 800;
+      color: #ffd54f;
+      line-height: 1;
+    }
+
+    .highlight-card .sub {
+      font-size: 0.75rem;
+      color: #666;
+      margin-top: 0.3rem;
+    }
+
+    /* ── Game mode grid ── */
+    .modes-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+      gap: 1rem;
+      margin-bottom: 2.5rem;
+    }
+
+    .mode-card {
+      background: #1a1a2e;
+      border: 1px solid #252545;
+      border-radius: 12px;
+      padding: 1.4rem;
+      transition: border-color 0.2s;
+    }
+
+    .mode-card:hover {
+      border-color: #4caf50;
+    }
+
+    .mode-card .mode-header {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      margin-bottom: 1rem;
+    }
+
+    .mode-icon {
+      font-size: 1.4rem;
+    }
+
+    .mode-name {
+      font-size: 1rem;
+      font-weight: 700;
+      color: #fff;
+    }
+
+    .ratings-row {
+      display: flex;
+      gap: 1.2rem;
+      margin-bottom: 1.1rem;
+    }
+
+    .rating-block .r-label {
+      font-size: 0.65rem;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: #666;
+      margin-bottom: 0.15rem;
+    }
+
+    .rating-block .r-value {
+      font-size: 1.6rem;
+      font-weight: 800;
+      color: #e0e0e0;
+      line-height: 1;
+    }
+
+    .rating-block .r-value.best {
+      color: #ffd54f;
+    }
+
+    /* Win/loss/draw bar */
+    .wld-row {
+      display: flex;
+      gap: 0.8rem;
+      font-size: 0.8rem;
+      margin-bottom: 0.6rem;
+    }
+
+    .wld-item { display: flex; align-items: center; gap: 0.3rem; }
+    .dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+    .dot-win  { background: #4caf50; }
+    .dot-loss { background: #e53935; }
+    .dot-draw { background: #616161; }
+
+    .wld-bar {
+      display: flex;
+      height: 6px;
+      border-radius: 3px;
+      overflow: hidden;
+      background: #111;
+    }
+
+    .bar-win  { background: #4caf50; }
+    .bar-loss { background: #e53935; }
+    .bar-draw { background: #616161; }
+
+    .best-game-link {
+      display: block;
+      margin-top: 0.85rem;
+      font-size: 0.72rem;
+      color: #555;
+      text-align: right;
+    }
+
+    .best-game-link:hover { color: #81c784; }
+
+    /* ── Tactics card ── */
+    .tactics-card {
+      background: #1a1a2e;
+      border: 1px solid #252545;
+      border-radius: 12px;
+      padding: 1.4rem;
+      margin-bottom: 2.5rem;
+    }
+
+    .tactics-card .mode-header {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      margin-bottom: 1rem;
+    }
+
+    .tactics-ratings {
+      display: flex;
+      gap: 2rem;
+      margin-bottom: 1rem;
+    }
+
+    .tactics-bar-wrap {
+      margin-top: 0.4rem;
+    }
+
+    .tactics-bar-bg {
+      height: 8px;
+      background: #111;
+      border-radius: 4px;
+      overflow: hidden;
+      margin-top: 0.5rem;
+    }
+
+    .tactics-bar-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #ffd54f, #ff8f00);
+      border-radius: 4px;
+    }
+
+    .tactics-bar-label {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.7rem;
+      color: #666;
+      margin-top: 0.35rem;
+    }
+
+    /* ── Puzzle Rush card ── */
+    .puzzle-card {
+      background: #1a1a2e;
+      border: 1px solid #252545;
+      border-radius: 12px;
+      padding: 1.4rem;
+      margin-bottom: 2.5rem;
+    }
+
+    .puzzle-card .mode-header {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      margin-bottom: 1rem;
+    }
+
+    .puzzle-score {
+      display: flex;
+      align-items: baseline;
+      gap: 0.4rem;
+      margin-bottom: 0.8rem;
+    }
+
+    .puzzle-score .big { font-size: 2.8rem; font-weight: 800; color: #ffd54f; line-height: 1; }
+    .puzzle-score .sep { font-size: 1.5rem; color: #444; }
+    .puzzle-score .total { font-size: 1.5rem; color: #888; }
+
+    .accuracy-label {
+      font-size: 0.75rem;
+      color: #888;
+      margin-bottom: 0.5rem;
+    }
+
+    .accuracy-bar-bg {
+      height: 8px;
+      background: #111;
+      border-radius: 4px;
+      overflow: hidden;
+    }
+
+    .accuracy-bar-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #4caf50, #81c784);
+      border-radius: 4px;
+    }
+
+    /* ── Footer ── */
+    footer {
+      text-align: center;
+      color: #444;
+      font-size: 0.75rem;
+      margin-top: 3rem;
+    }
+
+    footer a { color: #555; }
+
+    @media (max-width: 480px) {
+      .highlights { flex-direction: column; }
+      header h1 { font-size: 1.7rem; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+
+  <header>
+    <div class="chess-icon">♟</div>
+    <h1><span>kuusnepa</span> — Chess Stats</h1>
+    <p>
+      <a href="https://www.chess.com/member/kuusnepa" target="_blank">chess.com/member/kuusnepa</a>
+      &nbsp;·&nbsp;
+      <a href="index.html">← home</a>
+    </p>
+  </header>
+
+  <!-- Highlights -->
+  <p class="section-label">Highlights</p>
+  <div class="highlights">
+    <div class="highlight-card">
+      <div class="label">Daily Best</div>
+      <div class="value">1268</div>
+      <div class="sub">current 1176</div>
+    </div>
+    <div class="highlight-card">
+      <div class="label">Tactics Peak</div>
+      <div class="value">2028</div>
+      <div class="sub">current 1763</div>
+    </div>
+    <div class="highlight-card">
+      <div class="label">Puzzle Rush</div>
+      <div class="value">26</div>
+      <div class="sub">out of 29 attempts</div>
+    </div>
+    <div class="highlight-card">
+      <div class="label">Total Daily Games</div>
+      <div class="value">342</div>
+      <div class="sub">168W · 147L · 27D</div>
+    </div>
+  </div>
+
+  <!-- Game modes -->
+  <p class="section-label">Game Modes</p>
+  <div class="modes-grid" id="modes"></div>
+
+  <!-- Tactics -->
+  <p class="section-label">Tactics</p>
+  <div class="tactics-card">
+    <div class="mode-header">
+      <span class="mode-icon">🧩</span>
+      <span class="mode-name">Tactics Trainer</span>
+    </div>
+    <div class="tactics-ratings">
+      <div class="rating-block">
+        <div class="r-label">Peak Rating</div>
+        <div class="r-value best">2028</div>
+      </div>
+      <div class="rating-block">
+        <div class="r-label">Current Rating</div>
+        <div class="r-value">1763</div>
+      </div>
+    </div>
+    <div class="tactics-bar-wrap">
+      <div class="tactics-bar-bg">
+        <!-- Fill = current / peak * 100 = 1763/2028 ≈ 86.9% -->
+        <div class="tactics-bar-fill" style="width: 86.9%"></div>
+      </div>
+      <div class="tactics-bar-label">
+        <span>0</span>
+        <span>Current: 1763 (86.9% of peak)</span>
+        <span>Peak: 2028</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Puzzle Rush -->
+  <p class="section-label">Puzzle Rush</p>
+  <div class="puzzle-card">
+    <div class="mode-header">
+      <span class="mode-icon">⚡</span>
+      <span class="mode-name">Puzzle Rush — Best Run</span>
+    </div>
+    <div class="puzzle-score">
+      <span class="big">26</span>
+      <span class="sep">/</span>
+      <span class="total">29</span>
+    </div>
+    <div class="accuracy-label">89.7% accuracy</div>
+    <div class="accuracy-bar-bg">
+      <div class="accuracy-bar-fill" style="width: 89.7%"></div>
+    </div>
+  </div>
+
+  <footer>
+    Data from <a href="https://www.chess.com/news/view/published-data-api" target="_blank">Chess.com Public API</a>
+  </footer>
+
+</div>
+
+<script>
+  const modes = [
+    {
+      name: 'Daily',
+      icon: '📅',
+      last: 1176,
+      best: 1268,
+      bestGame: 'https://www.chess.com/game/daily/758920973',
+      w: 168, l: 147, d: 27,
+    },
+    {
+      name: 'Blitz',
+      icon: '⚡',
+      last: 673,
+      best: 685,
+      bestGame: 'https://www.chess.com/game/live/146236551288',
+      w: 43, l: 39, d: 3,
+    },
+    {
+      name: 'Rapid',
+      icon: '⏱',
+      last: 891,
+      best: 891,
+      bestGame: 'https://www.chess.com/game/live/146830402259',
+      w: 3, l: 0, d: 0,
+    },
+    {
+      name: 'Bullet',
+      icon: '🔫',
+      last: 279,
+      best: 486,
+      bestGame: 'https://www.chess.com/game/live/75490849271',
+      w: 3, l: 8, d: 1,
+    },
+    {
+      name: 'Chess960 Daily',
+      icon: '🎲',
+      last: 489,
+      best: 677,
+      bestGame: 'https://www.chess.com/game/daily/487618093',
+      w: 2, l: 3, d: 0,
+    },
+  ];
+
+  const grid = document.getElementById('modes');
+
+  modes.forEach(m => {
+    const total = m.w + m.l + m.d;
+    const winPct  = total ? (m.w / total * 100).toFixed(1) : 0;
+    const lossPct = total ? (m.l / total * 100).toFixed(1) : 0;
+    const drawPct = total ? (m.d / total * 100).toFixed(1) : 0;
+
+    grid.innerHTML += `
+      <div class="mode-card">
+        <div class="mode-header">
+          <span class="mode-icon">${m.icon}</span>
+          <span class="mode-name">${m.name}</span>
+        </div>
+        <div class="ratings-row">
+          <div class="rating-block">
+            <div class="r-label">Current</div>
+            <div class="r-value">${m.last}</div>
+          </div>
+          <div class="rating-block">
+            <div class="r-label">Best Ever</div>
+            <div class="r-value best">${m.best}</div>
+          </div>
+        </div>
+        ${total > 0 ? `
+        <div class="wld-row">
+          <span class="wld-item"><span class="dot dot-win"></span>${m.w}W</span>
+          <span class="wld-item"><span class="dot dot-loss"></span>${m.l}L</span>
+          <span class="wld-item"><span class="dot dot-draw"></span>${m.d}D</span>
+          <span style="margin-left:auto;font-size:0.7rem;color:#666">${winPct}% wins</span>
+        </div>
+        <div class="wld-bar">
+          <div class="bar-win"  style="width:${winPct}%"></div>
+          <div class="bar-draw" style="width:${drawPct}%"></div>
+          <div class="bar-loss" style="width:${lossPct}%"></div>
+        </div>` : `<div style="color:#555;font-size:0.8rem">No games recorded</div>`}
+        <a class="best-game-link" href="${m.bestGame}" target="_blank">View best game ↗</a>
+      </div>
+    `;
+  });
+</script>
+
+</body>
+</html>
